@@ -1,0 +1,13 @@
+[package]
+name = "macos-audit"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+# cli = { version = "0.1.0", path = "cli" }
+# data = { version = "0.1.0", path = "data" }
+
+[workspace]
+members = ["cli", "data"]
+
