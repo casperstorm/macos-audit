@@ -18,8 +18,6 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    println!("Hello {:?}!", args.path);
-    println!("real path? {}", args.path.exists());
-    println!("we entitlements? {}", args.entitlements);
+    let path = args.path;
+    data::entitlements(&path);
 }
-
