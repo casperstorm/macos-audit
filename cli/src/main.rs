@@ -16,8 +16,15 @@ struct Args {
 }
 
 fn main() {
-    let args = Args::parse();
+    let path = Args::parse().path;
 
-    let path = args.path;
-    data::entitlements(&path);
+    match data::entitlements(&path) {
+        Ok(entitlement_list) => {
+            for (key, value) in entitlement_list {
+                println!("{key}");
+                println!("{value}");
+            }
+        }
+        Err(error) => println!("{error}"),
+    }
 }
