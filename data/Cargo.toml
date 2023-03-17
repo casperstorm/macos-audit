@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 plist-rs = "0.1.0"
+thiserror = "1.0.39"

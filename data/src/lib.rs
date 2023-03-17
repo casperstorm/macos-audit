@@ -1,19 +1,26 @@
+use std::collections::HashMap;
+use std::io::{BufReader, Cursor};
+use std::path::Path;
+use std::process::Command;
+
 use plist::Plist;
-use std::{
-    io::{BufRead, BufReader, Cursor},
-    path::Path,
-    process::Command,
-};
+use thiserror::Error;
 
-use serde::Deserialize;
+#[derive(Debug, Clone)]
+pub struct EntitlementList(HashMap<Entitlement, bool>);
 
-#[derive(Deserialize, Debug)]
-struct Entitlement {
-    #[serde(rename = "com.apple.security.device.camera")]
-    key: String,
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Entitlement(String);
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error(transparent)]
+    Parse(#[from] plist::Error),
+    #[error("invalid data: {0}")]
+    InvalidData(String),
 }
 
-pub fn entitlements(path: &Path) {
+pub fn entitlements(path: &Path) -> Result<EntitlementList, Error> {
     let output = Command::new("codesign")
         .arg("-d")
         .arg("--entitlements")
@@ -25,7 +32,21 @@ pub fn entitlements(path: &Path) {
 
     let file = Cursor::new(output);
     let mut reader = BufReader::new(file);
-    let plist = Plist::from_reader(&mut reader).unwrap();
+    let plist = Plist::from_reader(&mut reader).map_err(Error::from)?;
 
-    println!("{:?}", plist);
+    if let Plist::Dict(dict) = plist {
+        Ok(EntitlementList(
+            dict.into_iter()
+                .filter_map(|(key, value)| {
+                    if let Plist::Boolean(value) = value {
+                        Some((Entitlement(key), value))
+                    } else {
+                        None
+                    }
+                })
+                .collect::<HashMap<Entitlement, bool>>(),
+        ))
+    } else {
+        Err(Error::InvalidData(format!("{:?}", plist)))
+    }
 }
