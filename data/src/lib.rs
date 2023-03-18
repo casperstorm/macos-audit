@@ -5,7 +5,7 @@ use std::io::{BufReader, Cursor};
 use std::path::Path;
 use std::process::Command;
 
-use plist::Plist;
+use plist::Value;
 use thiserror::Error;
 
 #[derive(Debug, Clone)]
@@ -33,8 +33,8 @@ impl Display for Entitlement {
 pub enum Error {
     #[error(transparent)]
     Parse(#[from] plist::Error),
-    #[error("invalid data: {0}")]
-    InvalidData(String),
+    #[error("invalid data")]
+    InvalidDataType,
 }
 
 pub fn entitlements(path: &Path) -> Result<EntitlementList, Error> {
@@ -48,22 +48,19 @@ pub fn entitlements(path: &Path) -> Result<EntitlementList, Error> {
         .stdout;
 
     let file = Cursor::new(output);
-    let mut reader = BufReader::new(file);
-    let plist = Plist::from_reader(&mut reader).map_err(Error::from)?;
+    let reader = BufReader::new(file);
+    let plist = Value::from_reader(reader)?;
 
-    if let Plist::Dict(dict) = plist {
-        Ok(EntitlementList(
-            dict.into_iter()
-                .filter_map(|(key, value)| {
-                    if let Plist::Boolean(value) = value {
-                        Some((Entitlement(key), value))
-                    } else {
-                        None
-                    }
-                })
-                .collect::<HashMap<Entitlement, bool>>(),
-        ))
-    } else {
-        Err(Error::InvalidData(format!("{:?}", plist)))
-    }
+    Ok(EntitlementList(
+        plist
+            .as_dictionary()
+            .ok_or(Error::InvalidDataType)?
+            .into_iter()
+            .filter_map(|(key, value)| {
+                value
+                    .as_boolean()
+                    .map(|value| (Entitlement(key.clone()), value))
+            })
+            .collect::<HashMap<Entitlement, bool>>(),
+    ))
 }
