@@ -22,7 +22,7 @@ fn main() {
         Ok(entitlement_list) => {
             for (key, value) in entitlement_list {
                 println!("{key}");
-                println!("{value}");
+                println!("{:?}", value);
             }
         }
         Err(error) => println!("{error}"),
