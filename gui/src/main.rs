@@ -1,9 +1,12 @@
 use iced::widget::container;
-use iced::{executor, Application, Command, Element, Length};
+use iced::{executor, Application, Command, Length};
+use widget::Element;
 
 use self::screen::dashboard;
 
 mod screen;
+mod theme;
+mod widget;
 
 fn main() -> iced::Result {
     if let Err(error) = Audit::run(settings()) {
@@ -16,7 +19,7 @@ fn main() -> iced::Result {
 fn settings() -> iced::Settings<()> {
     iced::Settings {
         default_font: Some(include_bytes!("../fonts/iosevka-term-regular.ttf")),
-        default_text_size: 12.0,
+        default_text_size: 16.0,
         window: iced::window::Settings {
             platform_specific: iced::window::PlatformSpecific {
                 title_hidden: true,
@@ -46,9 +49,9 @@ impl Application for Audit {
     type Executor = executor::Default;
     type Message = Message;
     type Flags = ();
-    type Theme = iced::Theme;
+    type Theme = theme::Theme;
 
-    fn new(_flags: ()) -> (Audit, Command<Self::Message>) {
+    fn new(_flags: ()) -> (Audit, Command<Message>) {
         let screen = screen::Dashboard::new();
 
         (
@@ -78,13 +81,15 @@ impl Application for Audit {
     }
 
     fn view(&self) -> Element<Message> {
-        let content = match &self.screen {
+        let screen = match &self.screen {
             Screen::Dashboard(dashboard) => dashboard.view().map(Message::Dashboard),
         };
 
-        container(content)
+        container(screen)
+            .padding([30, 6, 6, 6])
             .width(Length::Fill)
             .height(Length::Fill)
+            .style(theme::Container::Default)
             .into()
     }
 }

@@ -1,5 +1,7 @@
 use iced::widget::{container, text};
-use iced::{Command, Element};
+use iced::Command;
+
+use crate::widget::Element;
 
 pub struct Dashboard;
 
@@ -18,6 +20,6 @@ impl Dashboard {
     }
 
     pub fn view(&self) -> Element<Message> {
-        container(text("tba")).into()
+        container(text("This is a little test. We are still building.")).into()
     }
 }
