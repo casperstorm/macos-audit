@@ -3,19 +3,10 @@ use std::io::{BufReader, Cursor};
 use std::path::Path;
 use std::process::Command;
 
-use entitlement::{Entitlement, EntitlementList, Value};
+use entitlement::{Entitlement, EntitlementList, Error, Value};
 
-mod entitlement;
-
-use thiserror::Error;
-
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error(transparent)]
-    Parse(#[from] plist::Error),
-    #[error("invalid data")]
-    InvalidDataType,
-}
+pub mod entitlement;
+pub mod verify;
 
 pub fn entitlements(path: &Path) -> Result<EntitlementList, Error> {
     let output = Command::new("codesign")

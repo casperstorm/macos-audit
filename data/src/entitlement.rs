@@ -2,6 +2,16 @@ use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::fmt::Display;
 
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error(transparent)]
+    Parse(#[from] plist::Error),
+    #[error("invalid data")]
+    InvalidDataType,
+}
+
 #[derive(Debug, Clone)]
 pub struct Value(plist::Value);
 

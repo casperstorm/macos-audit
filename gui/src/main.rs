@@ -2,8 +2,9 @@ use iced::widget::container;
 use iced::{executor, Application, Command, Length};
 use widget::Element;
 
-use self::screen::dashboard;
+use self::screen::{audit, drop};
 
+mod icon;
 mod screen;
 mod theme;
 mod widget;
@@ -21,6 +22,7 @@ fn settings() -> iced::Settings<()> {
         default_font: Some(include_bytes!("../fonts/iosevka-term-regular.ttf")),
         default_text_size: 16.0,
         window: iced::window::Settings {
+            size: (450, 450),
             platform_specific: iced::window::PlatformSpecific {
                 title_hidden: true,
                 titlebar_transparent: true,
@@ -37,12 +39,15 @@ struct Audit {
 }
 
 enum Screen {
-    Dashboard(screen::Dashboard),
+    Drop(screen::Drop),
+    Audit(screen::Audit),
 }
 
 #[derive(Debug)]
 enum Message {
-    Dashboard(dashboard::Message),
+    EventOccurred(iced::Event),
+    Drop(drop::Message),
+    Audit(audit::Message),
 }
 
 impl Application for Audit {
@@ -52,11 +57,11 @@ impl Application for Audit {
     type Theme = theme::Theme;
 
     fn new(_flags: ()) -> (Audit, Command<Message>) {
-        let screen = screen::Dashboard::new();
+        let screen = screen::Drop::new();
 
         (
             Audit {
-                screen: Screen::Dashboard(screen),
+                screen: Screen::Drop(screen),
             },
             Command::none(),
         )
@@ -66,15 +71,33 @@ impl Application for Audit {
         String::from("Audit")
     }
 
+    fn subscription(&self) -> iced::Subscription<Message> {
+        match &self.screen {
+            Screen::Drop(dashboard) => dashboard.subscription().map(Message::Drop),
+            _ => iced::subscription::events().map(Message::EventOccurred),
+        }
+    }
+
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
-            Message::Dashboard(message) => match &mut self.screen {
-                Screen::Dashboard(dashboard) => {
-                    if let Some((_event, _command)) = dashboard.update(message) {
-                        // Handle events and commands.
+            Message::Drop(message) => {
+                if let Screen::Drop(drop) = &mut self.screen {
+                    if let Some((event, _command)) = drop.update(message) {
+                        match event {
+                            drop::Event::Dropped(path) => {
+                                let entitlements = data::entitlements(&path);
+                                self.screen = Screen::Audit(screen::Audit::new(&entitlements))
+                            }
+                        }
                     }
                 }
-            },
+            }
+            Message::Audit(message) => {
+                if let Screen::Audit(audit) = &mut self.screen {
+                    if let Some((_event, _command)) = audit.update(message) {}
+                }
+            }
+            Message::EventOccurred(_) => {}
         }
 
         Command::none()
@@ -82,7 +105,8 @@ impl Application for Audit {
 
     fn view(&self) -> Element<Message> {
         let screen = match &self.screen {
-            Screen::Dashboard(dashboard) => dashboard.view().map(Message::Dashboard),
+            Screen::Drop(drop) => drop.view().map(Message::Drop),
+            Screen::Audit(audit) => audit.view().map(Message::Audit),
         };
 
         container(screen)

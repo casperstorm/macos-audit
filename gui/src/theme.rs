@@ -39,7 +39,9 @@ impl container::StyleSheet for Theme {
         match style {
             Container::Default => container::Appearance::default(),
             Container::Overlay => container::Appearance {
-                background: Some(iced::Background::Color(color!(0x0, 0x0, 0x0))),
+                border_radius: 8.0,
+                border_width: 1.0,
+                border_color: color!(0xFA, 0xF0, 0xBE, 0.1),
                 ..Default::default()
             },
         }
