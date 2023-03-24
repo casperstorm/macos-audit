@@ -12,20 +12,12 @@ pub fn cloud_slash<'a>() -> Text<'a> {
     to_text('\u{f290}')
 }
 
-pub fn cloud_plus<'a>() -> Text<'a> {
-    to_text('\u{f28e}')
-}
-
 pub fn cloud<'a>() -> Text<'a> {
     to_text('\u{f293}')
 }
 
 pub fn cloud_arrow_up<'a>() -> Text<'a> {
     to_text('\u{f285}')
-}
-
-pub fn cloud_checkmark<'a>() -> Text<'a> {
-    to_text('\u{f287}')
 }
 
 fn to_text<'a>(unicode: char) -> Text<'a> {

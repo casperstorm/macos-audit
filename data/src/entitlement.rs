@@ -1,6 +1,9 @@
 use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::io::{BufReader, Cursor};
+use std::path::Path;
+use std::process::Command;
 
 use thiserror::Error;
 
@@ -10,6 +13,8 @@ pub enum Error {
     Parse(#[from] plist::Error),
     #[error("invalid data")]
     InvalidDataType,
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 #[derive(Debug, Clone)]
@@ -37,19 +42,45 @@ impl Display for Entitlement {
 }
 
 #[derive(Debug, Clone)]
-pub struct EntitlementList(HashMap<Entitlement, Value>);
+pub struct List(HashMap<Entitlement, Value>);
 
-impl From<HashMap<Entitlement, Value>> for EntitlementList {
+impl From<HashMap<Entitlement, Value>> for List {
     fn from(value: HashMap<Entitlement, Value>) -> Self {
         Self(value)
     }
 }
 
-impl IntoIterator for EntitlementList {
+impl IntoIterator for List {
     type Item = (Entitlement, Value);
     type IntoIter = IntoIter<Entitlement, Value>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()
+    }
+}
+
+impl TryFrom<&Path> for List {
+    type Error = Error;
+
+    fn try_from(path: &Path) -> Result<List, Error> {
+        let output = Command::new("codesign")
+            .arg("-d")
+            .arg("--entitlements")
+            .arg(":-")
+            .arg(path)
+            .output()?
+            .stdout;
+
+        let file = Cursor::new(output);
+        let reader = BufReader::new(file);
+        let plist = plist::Value::from_reader(reader)?;
+
+        Ok(plist
+            .as_dictionary()
+            .ok_or(Error::InvalidDataType)?
+            .into_iter()
+            .map(|(key, value)| (Entitlement::unchecked_from(key), value.clone().into()))
+            .collect::<HashMap<Entitlement, Value>>()
+            .into())
     }
 }

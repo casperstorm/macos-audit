@@ -18,7 +18,8 @@ struct Args {
 fn main() {
     let path = Args::parse().path;
 
-    match data::entitlements(&path) {
+    // Fetch entitlements.
+    /* match data::entitlements(&path) {
         Ok(entitlement_list) => {
             for (key, value) in entitlement_list {
                 println!("{key}");
@@ -26,5 +27,5 @@ fn main() {
             }
         }
         Err(error) => println!("{error}"),
-    }
+    } */
 }

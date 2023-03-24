@@ -1,17 +1,18 @@
 use std::path::PathBuf;
 
+use data::application;
 use iced::widget::{column, container, text};
 use iced::{Command, Length};
 
 use crate::icon;
 use crate::widget::Element;
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug)]
 pub enum Mode {
     #[default]
     Idle,
     Hovered(PathBuf),
-    Dropped(PathBuf),
+    Error(application::Error),
 }
 
 pub struct Drop {
@@ -24,7 +25,7 @@ pub enum Message {
 }
 
 pub enum Event {
-    Dropped(PathBuf),
+    Dropped(application::Application),
 }
 
 impl Drop {
@@ -47,8 +48,13 @@ impl Drop {
                         None
                     }
                     iced::window::Event::FileDropped(path) => {
-                        self.mode = Mode::Dropped(path.clone());
-                        Some((Event::Dropped(path), Command::none()))
+                        match application::Application::try_from(path.as_path()) {
+                            Ok(application) => Some((Event::Dropped(application), Command::none())),
+                            Err(error) => {
+                                self.mode = Mode::Error(error);
+                                None
+                            }
+                        }
                     }
                     iced::window::Event::FilesHoveredLeft => {
                         self.mode = Mode::Idle;
@@ -66,15 +72,12 @@ impl Drop {
 
     pub fn view(&self) -> Element<Message> {
         let (icon, message) = match &self.mode {
-            Mode::Idle => (icon::cloud(), "Drop macOS application here"),
-            Mode::Hovered(path) => {
-                if data::verify::is_mac_application(path) {
-                    (icon::cloud_arrow_up(), "Release to audit application")
-                } else {
-                    (icon::cloud_slash(), "This file is not supported")
-                }
-            }
-            Mode::Dropped(_) => (icon::cloud_checkmark(), "Thanks!"),
+            Mode::Idle => (icon::cloud(), "Drop macOS application here".to_string()),
+            Mode::Hovered(_) => (
+                icon::cloud_arrow_up(),
+                "Release to audit application".to_string(),
+            ),
+            Mode::Error(error) => (icon::cloud_slash(), error.to_string()),
         };
 
         container(column![icon.size(64), text(message)].align_items(iced::Alignment::Center))

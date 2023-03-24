@@ -84,9 +84,8 @@ impl Application for Audit {
                 if let Screen::Drop(drop) = &mut self.screen {
                     if let Some((event, _command)) = drop.update(message) {
                         match event {
-                            drop::Event::Dropped(path) => {
-                                let entitlements = data::entitlements(&path);
-                                self.screen = Screen::Audit(screen::Audit::new(&entitlements))
+                            drop::Event::Dropped(application) => {
+                                self.screen = Screen::Audit(screen::Audit::new(&application))
                             }
                         }
                     }
