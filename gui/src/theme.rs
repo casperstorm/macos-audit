@@ -1,5 +1,5 @@
-use iced::widget::{container, text};
-use iced::{application, color};
+use iced::widget::{button, container, scrollable, text};
+use iced::{application, color, Background, Color};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Theme;
@@ -29,7 +29,6 @@ impl text::StyleSheet for Theme {
 pub enum Container {
     #[default]
     Default,
-    Overlay,
 }
 
 impl container::StyleSheet for Theme {
@@ -38,10 +37,85 @@ impl container::StyleSheet for Theme {
     fn appearance(&self, style: &Self::Style) -> container::Appearance {
         match style {
             Container::Default => container::Appearance::default(),
-            Container::Overlay => container::Appearance {
-                border_radius: 8.0,
-                border_width: 1.0,
-                border_color: color!(0xFA, 0xF0, 0xBE, 0.1),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub enum Scrollable {
+    #[default]
+    Default,
+}
+
+impl scrollable::StyleSheet for Theme {
+    type Style = Scrollable;
+
+    fn active(&self, style: &Self::Style) -> scrollable::Scrollbar {
+        match style {
+            Scrollable::Default => scrollable::Scrollbar {
+                background: None,
+                border_radius: 0.0,
+                border_width: 0.0,
+                border_color: Color::TRANSPARENT,
+                scroller: scrollable::Scroller {
+                    color: color!(0xeb, 0xdb, 0xb2),
+                    border_radius: 8.0,
+                    border_width: 0.0,
+                    border_color: Color::TRANSPARENT,
+                },
+            },
+        }
+    }
+
+    fn hovered(&self, style: &Self::Style) -> scrollable::Scrollbar {
+        match style {
+            Scrollable::Default => scrollable::Scrollbar {
+                ..self.active(style)
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub enum Button {
+    #[default]
+    Default,
+}
+impl button::StyleSheet for Theme {
+    type Style = Button;
+
+    fn active(&self, style: &Self::Style) -> button::Appearance {
+        match style {
+            Button::Default => button::Appearance {
+                background: None,
+                ..Default::default()
+            },
+        }
+    }
+
+    fn hovered(&self, style: &Self::Style) -> button::Appearance {
+        match style {
+            Button::Default => button::Appearance {
+                background: Some(Background::Color(color!(0xeb, 0xdb, 0xb2, 0.2))),
+                border_radius: 4.0,
+                ..Default::default()
+            },
+        }
+    }
+
+    fn disabled(&self, style: &Self::Style) -> button::Appearance {
+        match style {
+            Button::Default => button::Appearance {
+                ..Default::default()
+            },
+        }
+    }
+
+    fn pressed(&self, style: &Self::Style) -> button::Appearance {
+        match style {
+            Button::Default => button::Appearance {
+                background: Some(Background::Color(color!(0xeb, 0xdb, 0xb2, 0.35))),
+                border_radius: 4.0,
                 ..Default::default()
             },
         }

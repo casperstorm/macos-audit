@@ -4,6 +4,7 @@ use widget::Element;
 
 use self::screen::{audit, drop};
 
+mod font;
 mod icon;
 mod screen;
 mod theme;
@@ -90,16 +91,22 @@ impl Application for Audit {
                         }
                     }
                 }
+
+                Command::none()
             }
             Message::Audit(message) => {
                 if let Screen::Audit(audit) = &mut self.screen {
-                    if let Some((_event, _command)) = audit.update(message) {}
+                    if let Some((event, _command)) = audit.update(message) {
+                        match event {
+                            audit::Event::GoBack => self.screen = Screen::Drop(screen::Drop::new()),
+                        }
+                    }
                 }
-            }
-            Message::EventOccurred(_) => {}
-        }
 
-        Command::none()
+                Command::none()
+            }
+            Message::EventOccurred(_) => Command::none(),
+        }
     }
 
     fn view(&self) -> Element<Message> {
@@ -109,7 +116,7 @@ impl Application for Audit {
         };
 
         container(screen)
-            .padding([30, 6, 6, 6])
+            .padding([30, 10, 10, 10])
             .width(Length::Fill)
             .height(Length::Fill)
             .style(theme::Container::Default)

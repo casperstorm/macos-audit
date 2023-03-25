@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::path::{Path, PathBuf};
 
 use thiserror::Error;
@@ -16,6 +17,12 @@ pub enum Error {
 pub struct Application {
     pub path: PathBuf,
     pub entitlements: entitlement::List,
+}
+
+impl Display for Application {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.path.to_string_lossy())
+    }
 }
 
 impl TryFrom<&Path> for Application {
