@@ -25,10 +25,17 @@ impl text::StyleSheet for Theme {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum Row {
+    Odd,
+    Even,
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 pub enum Container {
     #[default]
     Default,
+    Row(Row),
 }
 
 impl container::StyleSheet for Theme {
@@ -37,6 +44,16 @@ impl container::StyleSheet for Theme {
     fn appearance(&self, style: &Self::Style) -> container::Appearance {
         match style {
             Container::Default => container::Appearance::default(),
+            Container::Row(row) => match row {
+                Row::Odd => container::Appearance {
+                    background: Some(Background::Color(color!(0x50, 0x50, 0x50, 0.9))),
+                    ..Default::default()
+                },
+                Row::Even => container::Appearance {
+                    background: Some(Background::Color(color!(0x38, 0x38, 0x38, 0.9))),
+                    ..Default::default()
+                },
+            },
         }
     }
 }

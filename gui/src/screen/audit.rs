@@ -33,28 +33,37 @@ impl Audit {
     }
 
     pub fn view(&self) -> Element<Message> {
-        let header: Element<Message> = {
-            row![
-                button(icon::arrow_left())
-                    .style(theme::Button::Default)
-                    .on_press(Message::BackPressed),
-                horizontal_space(Length::Fill),
-                text(&self.application).font(BOLD).size(16),
-                horizontal_space(Length::Fill),
-            ]
-            .align_items(iced::Alignment::Center)
-            .into()
-        };
+        let controls = row![
+            horizontal_space(Length::Fill),
+            text(&self.application).font(BOLD).size(16),
+            horizontal_space(Length::Fill),
+            button(icon::arrow_left())
+                .style(theme::Button::Default)
+                .on_press(Message::BackPressed),
+        ]
+        .padding([2, 4])
+        .align_items(iced::Alignment::Center);
 
         let entitlements = column![
-            text("Entitlements").font(BOLD),
+            container(text("Entitlements").font(BOLD)).padding([0, 4]),
             column(
                 self.application
                     .entitlements
                     .clone()
                     .into_iter()
-                    .map(|(ent, _)| text(ent).into())
-                    .collect(),
+                    .enumerate()
+                    .map(|(idx, (ent, _))| {
+                        container(text(ent))
+                            .style(if idx % 2 == 0 {
+                                theme::Container::Row(theme::Row::Even)
+                            } else {
+                                theme::Container::Row(theme::Row::Odd)
+                            })
+                            .padding([2, 4])
+                            .width(Length::Fill)
+                            .into()
+                    })
+                    .collect()
             )
         ]
         .spacing(4)
@@ -62,12 +71,13 @@ impl Audit {
 
         container(
             column![
-                header,
+                controls,
                 scrollable(entitlements)
                     .vertical_scroll(scrollable::Properties::default().scroller_width(1).width(1))
             ]
             .spacing(4),
         )
+        .padding([2, 0])
         .width(Length::Fill)
         .height(Length::Fill)
         .into()

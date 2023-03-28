@@ -116,7 +116,6 @@ impl Application for Audit {
         };
 
         container(screen)
-            .padding([30, 10, 10, 10])
             .width(Length::Fill)
             .height(Length::Fill)
             .style(theme::Container::Default)
