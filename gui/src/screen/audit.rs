@@ -8,10 +8,12 @@ use crate::{icon, theme};
 
 pub struct Audit {
     application: application::Application,
+    selected: Option<usize>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    EntitlementPressed(usize),
     BackPressed,
 }
 
@@ -23,12 +25,22 @@ impl Audit {
     pub fn new(application: &application::Application) -> Self {
         Self {
             application: application.clone(),
+            selected: None,
         }
     }
 
     pub fn update(&mut self, message: Message) -> Option<(Event, Command<Message>)> {
         match message {
             Message::BackPressed => Some((Event::GoBack, Command::none())),
+            Message::EntitlementPressed(idx) => {
+                if Some(idx) == self.selected {
+                    self.selected = None;
+                } else {
+                    self.selected = Some(idx);
+                }
+
+                None
+            }
         }
     }
 
@@ -37,23 +49,37 @@ impl Audit {
             horizontal_space(Length::Fill),
             text(&self.application).font(BOLD).size(16),
             horizontal_space(Length::Fill),
-            button(icon::arrow_left())
-                .style(theme::Button::Default)
-                .on_press(Message::BackPressed),
+            button(icon::arrow_left()).on_press(Message::BackPressed),
         ]
         .padding([2, 4])
         .align_items(iced::Alignment::Center);
 
         let entitlements = column![
-            container(text("Entitlements").font(BOLD)).padding([0, 4]),
+            container(text("Entitlements").font(BOLD)).padding([4, 6]),
             column(
                 self.application
                     .entitlements
                     .clone()
                     .into_iter()
                     .enumerate()
-                    .map(|(idx, (ent, _))| {
-                        container(text(ent))
+                    .map(|(idx, (ent, value))| {
+                        let mut content = column![row![
+                            text(ent),
+                            horizontal_space(Length::Fill),
+                            button(if Some(idx) == self.selected {
+                                icon::arrow_up_short()
+                            } else {
+                                icon::arrow_down_short()
+                            })
+                            .on_press(Message::EntitlementPressed(idx)),
+                        ]
+                        .align_items(iced::Alignment::Center)];
+
+                        if self.selected == Some(idx) {
+                            content = content.push(text(value));
+                        }
+
+                        container(content)
                             .style(if idx % 2 == 0 {
                                 theme::Container::Row(theme::Row::Even)
                             } else {
@@ -65,6 +91,7 @@ impl Audit {
                     })
                     .collect()
             )
+            .spacing(0)
         ]
         .spacing(4)
         .width(Length::Fill);

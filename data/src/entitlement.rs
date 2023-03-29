@@ -26,6 +26,12 @@ impl From<plist::Value> for Value {
     }
 }
 
+impl Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:#?}", self.0)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Entitlement(String);
 
