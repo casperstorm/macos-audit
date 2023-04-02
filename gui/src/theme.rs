@@ -97,7 +97,6 @@ impl scrollable::StyleSheet for Theme {
 pub enum Button {
     #[default]
     Default,
-    Bare,
 }
 impl button::StyleSheet for Theme {
     type Style = Button;
@@ -106,13 +105,6 @@ impl button::StyleSheet for Theme {
         match style {
             Button::Default => button::Appearance {
                 background: None,
-                ..Default::default()
-            },
-            Button::Bare => button::Appearance {
-                background: None,
-                border_radius: 0.0,
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
                 ..Default::default()
             },
         }
@@ -125,26 +117,12 @@ impl button::StyleSheet for Theme {
                 border_radius: 4.0,
                 ..Default::default()
             },
-            Button::Bare => button::Appearance {
-                background: None,
-                border_radius: 0.0,
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
-                ..Default::default()
-            },
         }
     }
 
     fn disabled(&self, style: &Self::Style) -> button::Appearance {
         match style {
             Button::Default => button::Appearance {
-                ..Default::default()
-            },
-            Button::Bare => button::Appearance {
-                background: None,
-                border_radius: 0.0,
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
                 ..Default::default()
             },
         }
@@ -155,13 +133,6 @@ impl button::StyleSheet for Theme {
             Button::Default => button::Appearance {
                 background: Some(Background::Color(color!(0xeb, 0xdb, 0xb2, 0.35))),
                 border_radius: 4.0,
-                ..Default::default()
-            },
-            Button::Bare => button::Appearance {
-                background: None,
-                border_radius: 0.0,
-                border_width: 0.0,
-                border_color: Color::TRANSPARENT,
                 ..Default::default()
             },
         }
